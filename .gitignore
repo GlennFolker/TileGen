@@ -1,0 +1,11 @@
+# Compile configurations
+.gradle/
+.settings/
+.projeect
+.classpath
+build/
+bin/
+
+# IDE-specific
+.idea/
+.vscode/

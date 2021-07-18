@@ -1,0 +1,46 @@
+plugins{
+    id 'java'
+}
+
+def entryPoint = 'tilegen.TileGen'
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+sourceSets.main{
+    java.srcDirs = ['src/']
+    resources.srcDirs = ['assets/']
+}
+
+repositories{
+    mavenCentral()
+    maven{ url 'https://jitpack.io' }
+}
+
+dependencies{
+    implementation 'com.github.Anuken.Arc:arc-core:v128.1'
+}
+
+jar{
+    archiveFileName.set 'TileGen.jar'
+
+    from sourceSets.main.output.classesDirs
+    from sourceSets.main.output.resourcesDir
+    from configurations.runtimeClasspath.collect{ it.isDirectory() ? it : zipTree(it) }
+
+    manifest.attributes(
+        'Main-Class': entryPoint
+    )
+}
+
+task run(type: JavaExec, dependsOn: [classes, configurations.runtimeClasspath]){
+    main = entryPoint
+    workingDir = file('assets')
+    classpath = sourceSets.main.runtimeClasspath + files('assets')
+    standardInput = System.in
+
+    if(project.hasProperty('args')){
+        // Splits file paths by ','
+        // -Pargs=path1.png,path2.png,path3.png,...
+        args = (project.property('args') as String).split(',')
+    }
+}
