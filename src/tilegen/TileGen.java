@@ -57,48 +57,53 @@ public class TileGen{
                 enforce(layout.height == 128, "Layout's height != 128");
 
                 for(Fi file : files){
-                    Pixmap image = new Pixmap(file);
-                    enforce(image.width % 4f == 0f, "@: Image dimension must be divisible by 4");
-                    enforce(image.width == image.height, "@: Image canvas must be square!", file);
+                    try{
+                        Pixmap image = new Pixmap(file);
+                        enforce(image.width % 4f == 0f, "@: Image dimension must be divisible by 4");
+                        enforce(image.width == image.height, "@: Image canvas must be square!", file);
 
-                    IntMap<PixmapRegion> palettes = new IntMap<>();
-                    for(int x = 0; x < 4; x++){
-                        for(int y = 0; y < 4; y++){
-                            palettes.put(layout.getRaw(
-                                x * layout.width / 12,
-                                y * layout.height / 4
-                            ), new PixmapRegion(
-                                image,
-                                x * image.width / 4, y * image.height / 4,
-                                image.width / 4, image.height / 4
-                            ));
-                        }
-                    }
-
-                    Pixmap out = new Pixmap(image.width / 4 * 12, image.height);
-
-                    for(int x = 0; x < out.width; x++){
-                        for(int y = 0; y < out.height; y++){
-                            PixmapRegion palette = palettes.get(layout.getRaw(
-                                x * layout.width / out.width,
-                                y * layout.height / out.height
-                            ));
-
-                            if(palette != null){
-                                out.setRaw(x, y, palette.get(
-                                    x % (out.width / 12),
-                                    y % (out.height / 4)
+                        IntMap<PixmapRegion> palettes = new IntMap<>();
+                        for(int x = 0; x < 4; x++){
+                            for(int y = 0; y < 4; y++){
+                                palettes.put(layout.getRaw(
+                                    x * layout.width / 12,
+                                    y * layout.height / 4
+                                ), new PixmapRegion(
+                                    image,
+                                    x * image.width / 4, y * image.height / 4,
+                                    image.width / 4, image.height / 4
                                 ));
                             }
                         }
-                    }
 
-                    file.sibling(file.nameWithoutExtension() + "-tiled.png").writePng(out);
-                    out.dispose();
+                        Pixmap out = new Pixmap(image.width / 4 * 12, image.height);
+
+                        for(int x = 0; x < out.width; x++){
+                            for(int y = 0; y < out.height; y++){
+                                PixmapRegion palette = palettes.get(layout.getRaw(
+                                    x * layout.width / out.width,
+                                    y * layout.height / out.height
+                                ));
+
+                                if(palette != null){
+                                    out.setRaw(x, y, palette.get(
+                                        x % (out.width / 12),
+                                        y % (out.height / 4)
+                                    ));
+                                }
+                            }
+                        }
+
+                        file.sibling(file.nameWithoutExtension() + "-tiled.png").writePng(out);
+                        out.dispose();
+                    }catch(Exception e){
+                        Log.err(Strings.getFinalMessage(e));
+                    }
                 }
+
                 layout.dispose();
             }catch(Exception e){
-                throw new RuntimeException(Strings.getFinalCause(e));
+                error(e);
             }
 
             Log.info("Finished!");
@@ -107,5 +112,9 @@ public class TileGen{
 
     public static void enforce(boolean cond, String format, Object... args){
         if(!cond) throw new IllegalArgumentException(Strings.format(format, args));
+    }
+
+    public static void error(Throwable t){
+        throw new RuntimeException(Strings.getFinalCause(t));
     }
 }
