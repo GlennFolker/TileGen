@@ -33,14 +33,14 @@ jar{
 }
 
 task run(type: JavaExec, dependsOn: [classes, configurations.runtimeClasspath]){
-    main = entryPoint
-    workingDir = file('assets')
-    classpath = sourceSets.main.runtimeClasspath + files('assets')
-    standardInput = System.in
+    main entryPoint
+    workingDir file('assets')
+    classpath sourceSets.main.runtimeClasspath + files('assets')
+    standardInput System.in
 
     if(project.hasProperty('args')){
         // Splits file paths by ','
         // -Pargs=path1.png,path2.png,path3.png,...
-        args = (project.property('args') as String).split(',')
+        args((project.property('args') as String).split(','))
     }
 }

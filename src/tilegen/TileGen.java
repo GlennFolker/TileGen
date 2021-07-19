@@ -2,6 +2,7 @@ package tilegen;
 
 import arc.files.*;
 import arc.graphics.*;
+import arc.graphics.g2d.*;
 import arc.struct.*;
 import arc.util.*;
 
@@ -26,7 +27,7 @@ public class TileGen{
 
         if(args.length == 0){
             Log.info("No images given.");
-            //return;
+            return;
         }
 
         Seq<Fi> files = new Seq<>();
@@ -39,7 +40,7 @@ public class TileGen{
             }
         }
 
-        //if(files.any()){
+        if(files.any()){
             Log.info("Processing @ file@...", files.size, files.size == 1 ? "" : "s");
 
             try{
@@ -52,15 +53,59 @@ public class TileGen{
                 while((next = stream.read()) != -1) bytes.add((byte)next);
 
                 Pixmap layout = new Pixmap(bytes.toArray());
-                enforce(layout.getWidth() == 384, "Layout's width != 384");
-                enforce(layout.getHeight() == 128, "Layout's height != 128");
+                enforce(layout.width == 384, "Layout's width != 384");
+                enforce(layout.height == 128, "Layout's height != 128");
+
+                for(Fi file : files){
+                    Pixmap image = new Pixmap(file);
+                    enforce(image.width % 4f == 0f, "@: Image dimension must be divisible by 4");
+                    enforce(image.width == image.height, "@: Image canvas must be square!", file);
+
+                    IntMap<PixmapRegion> palettes = new IntMap<>();
+                    for(int x = 0; x < 4; x++){
+                        for(int y = 0; y < 4; y++){
+                            palettes.put(layout.getRaw(
+                                x * layout.width / 12,
+                                y * layout.height / 4
+                            ), new PixmapRegion(
+                                image,
+                                x * image.width / 4, y * image.height / 4,
+                                image.width / 4, image.height / 4
+                            ));
+                        }
+                    }
+
+                    Pixmap out = new Pixmap(image.width / 4 * 12, image.height);
+
+                    for(int x = 0; x < out.width; x++){
+                        for(int y = 0; y < out.height; y++){
+                            PixmapRegion palette = palettes.get(layout.getRaw(
+                                x * layout.width / out.width,
+                                y * layout.height / out.height
+                            ));
+
+                            if(palette != null){
+                                out.setRaw(x, y, palette.get(
+                                    x % (out.width / 12),
+                                    y % (out.height / 4)
+                                ));
+                            }
+                        }
+                    }
+
+                    file.sibling(file.nameWithoutExtension() + "-tiled.png").writePng(out);
+                    out.dispose();
+                }
+                layout.dispose();
             }catch(Exception e){
                 throw new RuntimeException(Strings.getFinalCause(e));
             }
-        //}
+
+            Log.info("Finished!");
+        }
     }
 
-    public static void enforce(boolean cond, String message){
-        if(!cond) throw new IllegalArgumentException(message);
+    public static void enforce(boolean cond, String format, Object... args){
+        if(!cond) throw new IllegalArgumentException(Strings.format(format, args));
     }
 }
