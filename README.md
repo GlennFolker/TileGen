@@ -15,9 +15,7 @@ A simple Java project for generating tile variants for bit-masking.
 - Create your sprite:
   - The dimension size must be divisible by 4 and must be square.
   - Pixel scaling should be 1×1.
-  - The layout example is as seen [here](#L7).
 - Run `java -jar TileGen.jar [your-sprite].png`. This will generate a new processed sprite with the name as your raw sprite name suffixed with `-tiled`.
-- The generated sprite should look somewhat like [this](#L9).
 
 ### Using the Processed Sprite
 - Split your sprites into `sprites[47]` and map it as shown below: <br>
