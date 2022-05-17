@@ -24,7 +24,7 @@ A simple Java project for generating tile variants for bit-masking.
   ![Mask-Index](assets/mask-index.png)
 - The sprite of the tile can be mapped from the `mask` by using `sprites[tiles[mask]]` assuming `tiles` is:
   ```
-  new int[]{
+  int[]{
       39, 36, 39, 36, 27, 16, 27, 24, 39, 36, 39, 36, 27, 16, 27, 24,
       38, 37, 38, 37, 17, 41, 17, 43, 38, 37, 38, 37, 26, 21, 26, 25,
       39, 36, 39, 36, 27, 16, 27, 24, 39, 36, 39, 36, 27, 16, 27, 24,
